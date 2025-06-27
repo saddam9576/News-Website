@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simple News App</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body { padding-top: 70px; }
+    .card-img-top { height: 180px; object-fit: cover; }
+    footer { background-color: #f8f9fa; text-align: center; padding: 20px; margin-top: 40px; }
+    .navbar-brand img{
+        height: 50px;
+        width: 50px;
+        border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+  <div class="container-fluid">
+    <a class="navbar-brand"><img src="image.png"></a>
+    <!-- <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button> -->
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link active" href="#" onclick="fetchNews('world')">World</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" onclick="fetchNews('technology')">Technology</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" onclick="fetchNews('sports')">Sports</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" onclick="fetchNews('health')">Health</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<br>
+
+
+<!-- News Section -->
+<div class="container" id="newsContainer">
+  <div class="row" id="newsGrid"></div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <p>© 2025 Simple NewsApp. All rights reserved.</p>
+</footer>
+
+<script>
+  const API_KEY = 'pub_a69dcccba9ae43949e38465c1cb041f8';
+
+  async function fetchNews(category = 'world') {
+    const url = `https://newsdata.io/api/1/news?apikey=${API_KEY}&q=${category}&language=en`;
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      const articles = data.results || [];
+
+      const newsGrid = document.getElementById('newsGrid');
+      newsGrid.innerHTML = '';
+
+      articles.forEach((article, index) => {
+        if (!article.title || !article.link || !article.description) return;
+        const card = document.createElement('div');
+        card.className = 'col-md-4';
+
+        card.innerHTML = `
+          <div class="card mb-4 shadow-sm">
+            <img src="${article.image_url || 'https://via.placeholder.com/300x180'}" class="card-img-top" alt="News Image">
+            <div class="card-body">
+              <h5 class="card-title">${article.title}</h5>
+              <p class="card-text">${article.description.slice(0, 100)}...</p>
+              <a href="#" class="btn btn-primary btn-sm" onclick="viewDetails(${index})">Read More</a>
+            </div>
+          </div>
+        `;
+        newsGrid.appendChild(card);
+
+        // Save article in localStorage
+        localStorage.setItem(`news_${index}`, JSON.stringify(article));
+      });
+
+      if (articles.length === 0) {
+        newsGrid.innerHTML = '<p class="text-center">No news found for this category.</p>';
+      }
+    } catch (error) {
+      console.error('Failed to fetch news:', error);
+      document.getElementById('newsGrid').innerHTML = '<p class="text-danger">Failed to load news.</p>';
+    }
+  }
+
+  function viewDetails(index) {
+    localStorage.setItem('selectedNews', `news_${index}`);
+    window.open('details.html', '_blank');
+  }
+
+  fetchNews(); // Initial load
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
